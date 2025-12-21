@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-func TestGroupBy(t *testing.T) {
+func TestGroupedBy(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6}
-	groups := ToSlice(GroupBy(From(input), func(n int) string {
+	groups := Slice(GroupedBy(From(input), func(n int) string {
 		if n%2 == 0 {
 			return "even"
 		}
@@ -36,7 +36,7 @@ func TestGroupBy(t *testing.T) {
 
 func TestGroupByEmpty(t *testing.T) {
 	input := []int{}
-	groups := ToSlice(GroupBy(From(input), func(n int) int { return n % 2 }))
+	groups := Slice(GroupedBy(From(input), func(n int) int { return n % 2 }))
 
 	if len(groups) != 0 {
 		t.Errorf("expected empty groups, got %v", groups)
@@ -45,7 +45,7 @@ func TestGroupByEmpty(t *testing.T) {
 
 func TestGroupBySingleGroup(t *testing.T) {
 	input := []int{2, 4, 6, 8}
-	groups := ToSlice(GroupBy(From(input), func(n int) string { return "even" }))
+	groups := Slice(GroupedBy(From(input), func(n int) string { return "even" }))
 
 	if len(groups) != 1 {
 		t.Errorf("expected 1 group, got %d", len(groups))
@@ -62,7 +62,7 @@ func TestGroupBySingleGroup(t *testing.T) {
 
 func TestGroupByPreservesOrder(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	groups := ToSlice(GroupBy(From(input), func(n int) int { return n % 2 }))
+	groups := Slice(GroupedBy(From(input), func(n int) int { return n % 2 }))
 
 	// First group should be "1" (odd), second should be "0" (even)
 	if groups[0].Key != 1 {
@@ -99,7 +99,7 @@ func TestGroupByStruct(t *testing.T) {
 		{Name: "Eve", Age: 32, Country: "CA"},
 	}
 
-	groups := ToSlice(GroupBy(From(people), func(p TestPerson) string {
+	groups := Slice(GroupedBy(From(people), func(p TestPerson) string {
 		return p.Country
 	}))
 
@@ -134,7 +134,7 @@ func TestGroupByWithChaining(t *testing.T) {
 	}
 
 	// Filter first, then group
-	groups := ToSlice(GroupBy(
+	groups := Slice(GroupedBy(
 		From(people).Where(func(p TestPerson) bool { return p.Age >= 30 }),
 		func(p TestPerson) string { return p.Country },
 	))
@@ -159,7 +159,7 @@ func TestGroupByWithChaining(t *testing.T) {
 
 func TestGroupByStrings(t *testing.T) {
 	words := []string{"apple", "banana", "apricot", "blueberry", "avocado"}
-	groups := ToSlice(GroupBy(From(words), func(s string) byte {
+	groups := Slice(GroupedBy(From(words), func(s string) byte {
 		return s[0] // group by first letter
 	}))
 
@@ -188,7 +188,7 @@ func TestGroupByWithMap(t *testing.T) {
 	}
 
 	// Group by country, then map to count per country
-	groups := GroupBy(From(people), func(p TestPerson) string {
+	groups := GroupedBy(From(people), func(p TestPerson) string {
 		return p.Country
 	})
 
@@ -197,7 +197,7 @@ func TestGroupByWithMap(t *testing.T) {
 		Count   int
 	}
 
-	counts := ToSlice(Map(groups, func(g Group[string, TestPerson]) CountryCount {
+	counts := Slice(Mapped(groups, func(g Group[string, TestPerson]) CountryCount {
 		return CountryCount{Country: g.Key, Count: len(g.Items)}
 	}))
 
@@ -208,7 +208,7 @@ func TestGroupByWithMap(t *testing.T) {
 
 func TestGroupByAllSameKey(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	groups := ToSlice(GroupBy(From(input), func(n int) string { return "all" }))
+	groups := Slice(GroupedBy(From(input), func(n int) string { return "all" }))
 
 	if len(groups) != 1 {
 		t.Errorf("expected 1 group, got %d", len(groups))
@@ -221,7 +221,7 @@ func TestGroupByAllSameKey(t *testing.T) {
 
 func TestGroupByAllUniqueKeys(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	groups := ToSlice(GroupBy(From(input), func(n int) int { return n }))
+	groups := Slice(GroupedBy(From(input), func(n int) int { return n }))
 
 	if len(groups) != 5 {
 		t.Errorf("expected 5 groups (one per item), got %d", len(groups))

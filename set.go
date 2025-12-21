@@ -27,7 +27,7 @@ func (q *Query[T]) Except(other *Query[T]) *Query[T] {
 		iterate: func() Iterator[T] {
 			// Materialize the second query to check membership
 			otherSet := make(map[any]bool)
-			for _, item := range ToSlice(other) {
+			for _, item := range Slice(other) {
 				otherSet[item] = true
 			}
 
@@ -57,7 +57,7 @@ func (q *Query[T]) Intersect(other *Query[T]) *Query[T] {
 		iterate: func() Iterator[T] {
 			// Materialize the second query to check membership
 			otherSet := make(map[any]bool)
-			for _, item := range ToSlice(other) {
+			for _, item := range Slice(other) {
 				otherSet[item] = true
 			}
 

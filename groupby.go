@@ -6,9 +6,9 @@ type Group[K comparable, T any] struct {
 	Items []T
 }
 
-// GroupBy groups items by a key function and returns a query of groups.
+// GroupedBy groups items by a key function and returns a query of groups.
 // This is a function (not a method) because it returns a different type.
-func GroupBy[T any, K comparable](q *Query[T], keyFn func(T) K) *Query[Group[K, T]] {
+func GroupedBy[T any, K comparable](q *Query[T], keyFn func(T) K) *Query[Group[K, T]] {
 	return &Query[Group[K, T]]{
 		iterate: func() Iterator[Group[K, T]] {
 			// Materialize all items and group them

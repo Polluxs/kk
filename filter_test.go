@@ -7,7 +7,7 @@ import (
 func TestWhere(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := From(input).Where(func(n int) bool { return n%2 == 0 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{2, 4, 6, 8, 10}
 	if len(result) != len(expected) {
@@ -24,7 +24,7 @@ func TestWhere(t *testing.T) {
 func TestWhereNoneMatch(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	q := From(input).Where(func(n int) bool { return n > 10 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -34,7 +34,7 @@ func TestWhereNoneMatch(t *testing.T) {
 func TestWhereAllMatch(t *testing.T) {
 	input := []int{2, 4, 6, 8, 10}
 	q := From(input).Where(func(n int) bool { return n%2 == 0 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -44,7 +44,7 @@ func TestWhereAllMatch(t *testing.T) {
 func TestTake(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := From(input).Take(5)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{1, 2, 3, 4, 5}
 	if len(result) != len(expected) {
@@ -61,7 +61,7 @@ func TestTake(t *testing.T) {
 func TestTakeMoreThanAvailable(t *testing.T) {
 	input := []int{1, 2, 3}
 	q := From(input).Take(10)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -71,7 +71,7 @@ func TestTakeMoreThanAvailable(t *testing.T) {
 func TestTakeZero(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	q := From(input).Take(0)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -81,7 +81,7 @@ func TestTakeZero(t *testing.T) {
 func TestSkip(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := From(input).Skip(5)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{6, 7, 8, 9, 10}
 	if len(result) != len(expected) {
@@ -98,7 +98,7 @@ func TestSkip(t *testing.T) {
 func TestSkipMoreThanAvailable(t *testing.T) {
 	input := []int{1, 2, 3}
 	q := From(input).Skip(10)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -108,7 +108,7 @@ func TestSkipMoreThanAvailable(t *testing.T) {
 func TestSkipZero(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	q := From(input).Skip(0)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -121,7 +121,7 @@ func TestChaining(t *testing.T) {
 		Where(func(n int) bool { return n%2 == 0 }).
 		Skip(1).
 		Take(2)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{4, 6}
 	if len(result) != len(expected) {
@@ -138,7 +138,7 @@ func TestChaining(t *testing.T) {
 func TestTakeWhile(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := From(input).TakeWhile(func(n int) bool { return n < 5 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{1, 2, 3, 4}
 	if len(result) != len(expected) {
@@ -155,7 +155,7 @@ func TestTakeWhile(t *testing.T) {
 func TestTakeWhileNoneMatch(t *testing.T) {
 	input := []int{5, 6, 7, 8, 9}
 	q := From(input).TakeWhile(func(n int) bool { return n < 5 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -165,7 +165,7 @@ func TestTakeWhileNoneMatch(t *testing.T) {
 func TestTakeWhileAllMatch(t *testing.T) {
 	input := []int{1, 2, 3, 4}
 	q := From(input).TakeWhile(func(n int) bool { return n < 10 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -175,7 +175,7 @@ func TestTakeWhileAllMatch(t *testing.T) {
 func TestSkipWhile(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := From(input).SkipWhile(func(n int) bool { return n < 5 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{5, 6, 7, 8, 9, 10}
 	if len(result) != len(expected) {
@@ -192,7 +192,7 @@ func TestSkipWhile(t *testing.T) {
 func TestSkipWhileNoneMatch(t *testing.T) {
 	input := []int{5, 6, 7, 8, 9}
 	q := From(input).SkipWhile(func(n int) bool { return n < 5 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -202,7 +202,7 @@ func TestSkipWhileNoneMatch(t *testing.T) {
 func TestSkipWhileAllMatch(t *testing.T) {
 	input := []int{1, 2, 3, 4}
 	q := From(input).SkipWhile(func(n int) bool { return n < 10 })
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)

@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-func TestMap(t *testing.T) {
+func TestMapped(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	q := Map(From(input), func(n int) int { return n * 2 })
-	result := ToSlice(q)
+	q := Mapped(From(input), func(n int) int { return n * 2 })
+	result := Slice(q)
 
 	expected := []int{2, 4, 6, 8, 10}
 	if len(result) != len(expected) {
@@ -25,8 +25,8 @@ func TestMap(t *testing.T) {
 
 func TestMapTypeChange(t *testing.T) {
 	input := []int{1, 2, 3}
-	q := Map(From(input), func(n int) string { return strconv.Itoa(n) })
-	result := ToSlice(q)
+	q := Mapped(From(input), func(n int) string { return strconv.Itoa(n) })
+	result := Slice(q)
 
 	expected := []string{"1", "2", "3"}
 	if len(result) != len(expected) {
@@ -42,8 +42,8 @@ func TestMapTypeChange(t *testing.T) {
 
 func TestMapEmpty(t *testing.T) {
 	input := []int{}
-	q := Map(From(input), func(n int) int { return n * 2 })
-	result := ToSlice(q)
+	q := Mapped(From(input), func(n int) int { return n * 2 })
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -52,8 +52,8 @@ func TestMapEmpty(t *testing.T) {
 
 func TestMapChaining(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	q := Map(From(input).Where(func(n int) bool { return n%2 == 0 }), func(n int) int { return n * 10 })
-	result := ToSlice(q)
+	q := Mapped(From(input).Where(func(n int) bool { return n%2 == 0 }), func(n int) int { return n * 10 })
+	result := Slice(q)
 
 	expected := []int{20, 40}
 	if len(result) != len(expected) {
@@ -74,10 +74,10 @@ func TestMapToStruct(t *testing.T) {
 	}
 
 	input := []int{1, 2, 3}
-	q := Map(From(input), func(n int) Result {
+	q := Mapped(From(input), func(n int) Result {
 		return Result{Value: n, Doubled: n * 2}
 	})
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 3 {
 		t.Errorf("expected length 3, got %d", len(result))
@@ -88,16 +88,16 @@ func TestMapToStruct(t *testing.T) {
 	}
 }
 
-func TestFlatMap(t *testing.T) {
+func TestFlattened(t *testing.T) {
 	input := []int{1, 2, 3}
-	q := FlatMap(From(input), func(n int) []int {
+	q := Flattened(From(input), func(n int) []int {
 		result := make([]int, n)
 		for i := 0; i < n; i++ {
 			result[i] = n
 		}
 		return result
 	})
-	result := ToSlice(q)
+	result := Slice(q)
 
 	// 1 -> [1], 2 -> [2, 2], 3 -> [3, 3, 3]
 	expected := []int{1, 2, 2, 3, 3, 3}
@@ -114,10 +114,10 @@ func TestFlatMap(t *testing.T) {
 
 func TestFlatMapStrings(t *testing.T) {
 	input := []string{"hello world", "foo bar baz"}
-	q := FlatMap(From(input), func(s string) []string {
+	q := Flattened(From(input), func(s string) []string {
 		return strings.Split(s, " ")
 	})
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []string{"hello", "world", "foo", "bar", "baz"}
 	if len(result) != len(expected) {
@@ -133,8 +133,8 @@ func TestFlatMapStrings(t *testing.T) {
 
 func TestFlatMapEmpty(t *testing.T) {
 	input := []int{}
-	q := FlatMap(From(input), func(n int) []int { return []int{n, n} })
-	result := ToSlice(q)
+	q := Flattened(From(input), func(n int) []int { return []int{n, n} })
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -143,13 +143,13 @@ func TestFlatMapEmpty(t *testing.T) {
 
 func TestFlatMapWithEmptyResults(t *testing.T) {
 	input := []int{1, 2, 3}
-	q := FlatMap(From(input), func(n int) []int {
+	q := Flattened(From(input), func(n int) []int {
 		if n == 2 {
 			return []int{} // Empty slice for 2
 		}
 		return []int{n}
 	})
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{1, 3}
 	if len(result) != len(expected) {
@@ -165,14 +165,14 @@ func TestFlatMapWithEmptyResults(t *testing.T) {
 
 func TestFlatMapTypeChange(t *testing.T) {
 	input := []int{1, 2}
-	q := FlatMap(From(input), func(n int) []string {
+	q := Flattened(From(input), func(n int) []string {
 		result := make([]string, n)
 		for i := 0; i < n; i++ {
 			result[i] = strconv.Itoa(n)
 		}
 		return result
 	})
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []string{"1", "2", "2"}
 	if len(result) != len(expected) {
@@ -186,10 +186,10 @@ func TestFlatMapTypeChange(t *testing.T) {
 	}
 }
 
-func TestNestedMap(t *testing.T) {
+func TestNestedMapped(t *testing.T) {
 	input := []int{1, 2, 3}
-	q := Map(Map(From(input), func(n int) int { return n * 2 }), func(n int) string { return strconv.Itoa(n) })
-	result := ToSlice(q)
+	q := Mapped(Mapped(From(input), func(n int) int { return n * 2 }), func(n int) string { return strconv.Itoa(n) })
+	result := Slice(q)
 
 	expected := []string{"2", "4", "6"}
 	if len(result) != len(expected) {

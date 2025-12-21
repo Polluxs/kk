@@ -7,7 +7,7 @@ import (
 func TestFrom(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	q := From(input)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != len(input) {
 		t.Errorf("expected length %d, got %d", len(input), len(result))
@@ -23,7 +23,7 @@ func TestFrom(t *testing.T) {
 func TestFromEmpty(t *testing.T) {
 	input := []int{}
 	q := From(input)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -38,7 +38,7 @@ func TestFromChan(t *testing.T) {
 	close(ch)
 
 	q := FromChan(ch)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := []int{1, 2, 3, 4, 5}
 	if len(result) != len(expected) {
@@ -57,7 +57,7 @@ func TestFromChanEmpty(t *testing.T) {
 	close(ch)
 
 	q := FromChan(ch)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)

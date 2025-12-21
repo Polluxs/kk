@@ -38,8 +38,8 @@ func FromChan[T any](ch <-chan T) *Query[T] {
 	}
 }
 
-// ToSlice materializes the query to a slice.
-func ToSlice[T any](q *Query[T]) []T {
+// Slice materializes the query to a slice.
+func Slice[T any](q *Query[T]) []T {
 	var result []T
 	iter := q.iterate()
 	for {

@@ -11,12 +11,12 @@ import (
 // Integration tests that combine multiple operations
 
 type User struct {
-	ID       int
-	Name     string
-	Age      int
-	Active   bool
-	Country  string
-	Score    int
+	ID      int
+	Name    string
+	Age     int
+	Active  bool
+	Country string
+	Score   int
 }
 
 func getTestUsers() []User {
@@ -37,13 +37,13 @@ func getTestUsers() []User {
 func TestIntegration_FilterSortTake(t *testing.T) {
 	// Get active users from US, sorted by score descending, take top 2
 	users := getTestUsers()
-	q := OrderByDescending(
+	q := SortedByDesc(
 		From(users).
 			Where(func(u User) bool { return u.Active }).
 			Where(func(u User) bool { return u.Country == "US" }),
 		func(u User) int { return u.Score },
 	)
-	result := ToSlice(q.Query.Take(2))
+	result := Slice(q.Query.Take(2))
 
 	if len(result) != 2 {
 		t.Errorf("expected 2 users, got %d", len(result))
@@ -62,7 +62,7 @@ func TestIntegration_MapAndAggregate(t *testing.T) {
 	// Get total score of active users
 	users := getTestUsers()
 	totalScore := Sum(
-		Map(
+		Mapped(
 			From(users).Where(func(u User) bool { return u.Active }),
 			func(u User) int { return u.Score },
 		),
@@ -84,7 +84,7 @@ func TestIntegration_GroupByCountry(t *testing.T) {
 		From(users).Where(func(u User) bool { return u.Active }),
 		func(u User) string { return u.Country },
 	)
-	countries := ToSlice(activeByCountry)
+	countries := Slice(activeByCountry)
 
 	// Should have US, UK, CA
 	if len(countries) != 3 {
@@ -164,7 +164,7 @@ func TestIntegration_SetOperations(t *testing.T) {
 	highScorers := From(users).Where(func(u User) bool { return u.Score >= 85 })
 
 	// Union: users from US OR with score >= 85
-	union := ToSlice(usUsers.Union(highScorers))
+	union := Slice(usUsers.Union(highScorers))
 
 	// US users: Alice, Charlie, Eve, Ivy (4)
 	// High scorers: Alice(85), Bob(90), Diana(95), Grace(88), Henry(92) (5)
@@ -174,7 +174,7 @@ func TestIntegration_SetOperations(t *testing.T) {
 	}
 
 	// Intersection: users from US AND with score >= 85
-	intersection := ToSlice(usUsers.Intersect(highScorers))
+	intersection := Slice(usUsers.Intersect(highScorers))
 
 	// Only Alice is from US and has score >= 85
 	if len(intersection) != 1 {
@@ -190,7 +190,7 @@ func TestIntegration_ComplexChaining(t *testing.T) {
 	users := getTestUsers()
 
 	q := ThenBy(
-		OrderBy(
+		SortedBy(
 			From(users).
 				Where(func(u User) bool { return u.Active }).
 				Skip(1).
@@ -200,7 +200,7 @@ func TestIntegration_ComplexChaining(t *testing.T) {
 		func(u User) string { return u.Name },
 	)
 
-	result := ToSlice(q.Query)
+	result := Slice(q.Query)
 
 	if len(result) != 5 {
 		t.Errorf("expected 5 users, got %d", len(result))
@@ -226,7 +226,7 @@ func TestIntegration_FlatMapWithParallel(t *testing.T) {
 	}
 
 	// Create tasks for each user
-	tasks := FlatMap(From(users), func(u User) []Task {
+	tasks := Flattened(From(users), func(u User) []Task {
 		return []Task{
 			{UserID: u.ID, TaskID: 1},
 			{UserID: u.ID, TaskID: 2},
@@ -318,8 +318,8 @@ func TestIntegration_ConcatAndDistinct(t *testing.T) {
 	}
 
 	combined := From(users1).Concat(From(users2))
-	countries := Map(combined, func(u User) string { return u.Country })
-	distinctCountries := ToSlice(countries.Distinct())
+	countries := Mapped(combined, func(u User) string { return u.Country })
+	distinctCountries := Slice(countries.Distinct())
 
 	if len(distinctCountries) != 3 {
 		t.Errorf("expected 3 distinct countries, got %d", len(distinctCountries))

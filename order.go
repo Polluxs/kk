@@ -11,12 +11,12 @@ type OrderedQuery[T any] struct {
 	comparators []func(T, T) int
 }
 
-// OrderBy sorts items in ascending order by a key.
-func OrderBy[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
+// SortedBy sorts items in ascending order by a key.
+func SortedBy[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
 		Query: &Query[T]{
 			iterate: func() Iterator[T] {
-				items := ToSlice(q)
+				items := Slice(q)
 				sort.Slice(items, func(i, j int) bool {
 					return keyFn(items[i]) < keyFn(items[j])
 				})
@@ -47,12 +47,12 @@ func OrderBy[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T
 	}
 }
 
-// OrderByDescending sorts items in descending order by a key.
-func OrderByDescending[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
+// SortedByDesc sorts items in descending order by a key.
+func SortedByDesc[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
 		Query: &Query[T]{
 			iterate: func() Iterator[T] {
-				items := ToSlice(q)
+				items := Slice(q)
 				sort.Slice(items, func(i, j int) bool {
 					return keyFn(items[i]) > keyFn(items[j])
 				})
@@ -99,7 +99,7 @@ func ThenBy[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K) *Ordered
 	return &OrderedQuery[T]{
 		Query: &Query[T]{
 			iterate: func() Iterator[T] {
-				items := ToSlice(oq.Query)
+				items := Slice(oq.Query)
 				sort.Slice(items, func(i, j int) bool {
 					for _, cmp := range newComparators {
 						result := cmp(items[i], items[j])
@@ -141,7 +141,7 @@ func ThenByDescending[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K
 	return &OrderedQuery[T]{
 		Query: &Query[T]{
 			iterate: func() Iterator[T] {
-				items := ToSlice(oq.Query)
+				items := Slice(oq.Query)
 				sort.Slice(items, func(i, j int) bool {
 					for _, cmp := range newComparators {
 						result := cmp(items[i], items[j])

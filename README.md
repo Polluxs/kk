@@ -41,8 +41,8 @@ Called on the query, returns a new query of the same type.
 | `.SkipWhile(predicate)` | Skip while condition is true |
 | `.Distinct()` | Remove duplicates |
 | `.DistinctBy(keyFn)` | Remove duplicates by key |
-| `.OrderBy(keyFn)` | Sort ascending |
-| `.OrderByDescending(keyFn)` | Sort descending |
+| `.SortedBy(keyFn)` | Sort ascending |
+| `.SortedByDesc(keyFn)` | Sort descending |
 | `.ThenBy(keyFn)` | Secondary sort |
 | `.Chunk(size)` | Split into batches |
 | `.Concat(other)` | Combine queries |
@@ -58,9 +58,9 @@ Package-level functions that transform, execute, or aggregate.
 |:---------|:------------|
 | `kk.From(slice)` | Create query from slice |
 | `kk.FromChan(ch)` | Create query from channel |
-| `kk.Map(q, fn)` | Transform each item to new type |
-| `kk.FlatMap(q, fn)` | Transform and flatten |
-| `kk.GroupBy(q, keyFn)` | Group items by key |
+| `kk.Mapped(q, fn)` | Transform each item to new type |
+| `kk.Flattened(q, fn)` | Transform and flatten |
+| `kk.GroupedBy(q, keyFn)` | Group items by key |
 | `kk.Parallel(q, ctx, n, fn)` | Process items in parallel |
 | `kk.ParallelResult(q, ctx, n, fn)` | Process and collect results |
 | `kk.ParallelByKey(q, ctx, n, perKey, keyFn, fn)` | Parallel with per-key limit |
@@ -70,7 +70,7 @@ Package-level functions that transform, execute, or aggregate.
 | `kk.First(q)` | First item |
 | `kk.Any(q, predicate)` | Any match? |
 | `kk.All(q, predicate)` | All match? |
-| `kk.ToSlice(q)` | Materialize to slice |
+| `kk.Slice(q)` | Materialize to slice |
 | `kk.Print(q)` | Print items (debug) |
 
 ---
@@ -94,7 +94,7 @@ err := kk.Parallel(q, ctx, 20, func(ctx context.Context, u User) error {
 ```go
 q := kk.From(urls).Where(isValid)
 responses, err := kk.ParallelResult(
-    kk.Map(q, toRequest),
+    kk.Mapped(q, toRequest),
     ctx, 10, fetch,
 )
 ```
@@ -103,11 +103,11 @@ responses, err := kk.ParallelResult(
 
 ```go
 // Group users by country, count per group
-groups := kk.GroupBy(kk.From(users), func(u User) string {
+groups := kk.GroupedBy(kk.From(users), func(u User) string {
     return u.Country
 })
 
-for _, g := range kk.ToSlice(groups) {
+for _, g := range kk.Slice(groups) {
     fmt.Printf("%s: %d users\n", g.Key, len(g.Items))
 }
 ```
@@ -142,7 +142,7 @@ kk.Print(kk.From(users).Where(active).Take(5))
 
 ## ⚠️ WARNING: Go Generics Suck
 
-You might wonder why `Map` and `ParallelResult` are awkward package functions instead of nice chainable methods like everything else.
+You might wonder why `Mapped` and `ParallelResult` are awkward package functions instead of nice chainable methods like everything else.
 
 **Because Go generics are half-baked.**
 
@@ -153,29 +153,29 @@ Go's generics have a fundamental limitation: **methods cannot introduce new type
 func (q *Query[T]) Where(fn func(T) bool) *Query[T]  ✓
 
 // This doesn't compile - R is new
-func (q *Query[T]) Map[R any](fn func(T) R) *Query[R]  ✗
+func (q *Query[T]) Mapped[R any](fn func(T) R) *Query[R]  ✗
 ```
 
 So we're forced to write:
 ```go
-kk.Map(query, func(u User) UserDTO { ... })  // ugly
+kk.Mapped(query, func(u User) UserDTO { ... })  // ugly
 ```
 
 Instead of:
 ```go
-query.Map(func(u User) UserDTO { ... })  // what we want
+query.Mapped(func(u User) UserDTO { ... })  // what we want
 ```
 
 This affects every operation that transforms to a different type:
-- `Map` → stuck as function
-- `FlatMap` → stuck as function
+- `Mapped` → stuck as function
+- `Flattened` → stuck as function
 - `ParallelResult` → stuck as function
-- `GroupBy` → stuck as function
+- `GroupedBy` → stuck as function
 - Any future `Select`, `Zip` → all stuck as functions
 
 **9 out of 10 times, you're mapping to your own custom types**. And if ```[ANY]``` was OK for me, I'd write Typescript. 
 
-So we used: `kk.Map(kk.Map(query, fn1), fn2)` nesting instead of `query.Map(fn1).Map(fn2)`.
+So we use: `kk.Mapped(kk.Mapped(query, fn1), fn2)` nesting instead of `query.Mapped(fn1).Mapped(fn2)`.
 
 I did what I could with it 🤷
 

@@ -4,10 +4,10 @@ import (
 	"testing"
 )
 
-func TestOrderBy(t *testing.T) {
+func TestSortedBy(t *testing.T) {
 	input := []int{5, 2, 8, 1, 9, 3}
-	q := OrderBy(From(input), func(n int) int { return n })
-	result := ToSlice(q.Query)
+	q := SortedBy(From(input), func(n int) int { return n })
+	result := Slice(q.Query)
 
 	expected := []int{1, 2, 3, 5, 8, 9}
 	if len(result) != len(expected) {
@@ -23,18 +23,18 @@ func TestOrderBy(t *testing.T) {
 
 func TestOrderByEmpty(t *testing.T) {
 	input := []int{}
-	q := OrderBy(From(input), func(n int) int { return n })
-	result := ToSlice(q.Query)
+	q := SortedBy(From(input), func(n int) int { return n })
+	result := Slice(q.Query)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
 	}
 }
 
-func TestOrderByDescending(t *testing.T) {
+func TestSortedByDesc(t *testing.T) {
 	input := []int{5, 2, 8, 1, 9, 3}
-	q := OrderByDescending(From(input), func(n int) int { return n })
-	result := ToSlice(q.Query)
+	q := SortedByDesc(From(input), func(n int) int { return n })
+	result := Slice(q.Query)
 
 	expected := []int{9, 8, 5, 3, 2, 1}
 	if len(result) != len(expected) {
@@ -50,8 +50,8 @@ func TestOrderByDescending(t *testing.T) {
 
 func TestOrderByString(t *testing.T) {
 	input := []string{"banana", "apple", "cherry", "date"}
-	q := OrderBy(From(input), func(s string) string { return s })
-	result := ToSlice(q.Query)
+	q := SortedBy(From(input), func(s string) string { return s })
+	result := Slice(q.Query)
 
 	expected := []string{"apple", "banana", "cherry", "date"}
 	for i, v := range result {
@@ -76,10 +76,10 @@ func TestThenBy(t *testing.T) {
 	}
 
 	q := ThenBy(
-		OrderBy(From(input), func(e Employee) string { return e.Department }),
+		SortedBy(From(input), func(e Employee) string { return e.Department }),
 		func(e Employee) int { return e.Salary },
 	)
-	result := ToSlice(q.Query)
+	result := Slice(q.Query)
 
 	// Should be: HR(David 40k, Bob 45k), IT(Alice 50k, Charlie 55k)
 	expectedNames := []string{"David", "Bob", "Alice", "Charlie"}
@@ -99,10 +99,10 @@ func TestThenByDescending(t *testing.T) {
 	}
 
 	q := ThenByDescending(
-		OrderBy(From(input), func(e Employee) string { return e.Department }),
+		SortedBy(From(input), func(e Employee) string { return e.Department }),
 		func(e Employee) int { return e.Salary },
 	)
-	result := ToSlice(q.Query)
+	result := Slice(q.Query)
 
 	// Should be: HR(Bob 45k, David 40k), IT(Charlie 55k, Alice 50k)
 	expectedNames := []string{"Bob", "David", "Charlie", "Alice"}
@@ -115,8 +115,8 @@ func TestThenByDescending(t *testing.T) {
 
 func TestOrderByWithChaining(t *testing.T) {
 	input := []int{5, 2, 8, 1, 9, 3, 7, 4, 6}
-	q := OrderBy(From(input).Where(func(n int) bool { return n > 3 }), func(n int) int { return n })
-	result := ToSlice(q.Query.Take(3))
+	q := SortedBy(From(input).Where(func(n int) bool { return n > 3 }), func(n int) int { return n })
+	result := Slice(q.Query.Take(3))
 
 	expected := []int{4, 5, 6}
 	if len(result) != len(expected) {

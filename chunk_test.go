@@ -7,7 +7,7 @@ import (
 func TestChunk(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := Chunk(From(input), 3)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := [][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10}}
 	if len(result) != len(expected) {
@@ -29,7 +29,7 @@ func TestChunk(t *testing.T) {
 func TestChunkExact(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6}
 	q := Chunk(From(input), 2)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := [][]int{{1, 2}, {3, 4}, {5, 6}}
 	if len(result) != len(expected) {
@@ -46,7 +46,7 @@ func TestChunkExact(t *testing.T) {
 func TestChunkEmpty(t *testing.T) {
 	input := []int{}
 	q := Chunk(From(input), 3)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 0 {
 		t.Errorf("expected empty slice, got %v", result)
@@ -56,7 +56,7 @@ func TestChunkEmpty(t *testing.T) {
 func TestChunkSizeOne(t *testing.T) {
 	input := []int{1, 2, 3}
 	q := Chunk(From(input), 1)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 3 {
 		t.Errorf("expected length 3, got %d", len(result))
@@ -75,7 +75,7 @@ func TestChunkSizeOne(t *testing.T) {
 func TestChunkLargerThanInput(t *testing.T) {
 	input := []int{1, 2, 3}
 	q := Chunk(From(input), 10)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	if len(result) != 1 {
 		t.Errorf("expected length 1, got %d", len(result))
@@ -89,7 +89,7 @@ func TestChunkLargerThanInput(t *testing.T) {
 func TestChunkWithChaining(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	q := Chunk(From(input).Where(func(n int) bool { return n%2 == 0 }), 2)
-	result := ToSlice(q)
+	result := Slice(q)
 
 	expected := [][]int{{2, 4}, {6, 8}, {10}}
 	if len(result) != len(expected) {
