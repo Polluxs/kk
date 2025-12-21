@@ -1,8 +1,8 @@
 package kk
 
 // Where filters items based on a predicate.
-func (q *Query_[T]) Where(predicate func(T) bool) *Query_[T] {
-	return &Query_[T]{
+func (q *KKQuery[T]) Where(predicate func(T) bool) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
 			return func() (T, bool) {
@@ -22,8 +22,8 @@ func (q *Query_[T]) Where(predicate func(T) bool) *Query_[T] {
 }
 
 // Take returns the first n items.
-func (q *Query_[T]) Take(n int) *Query_[T] {
-	return &Query_[T]{
+func (q *KKQuery[T]) Take(n int) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
 			count := 0
@@ -45,8 +45,8 @@ func (q *Query_[T]) Take(n int) *Query_[T] {
 }
 
 // Skip skips the first n items.
-func (q *Query_[T]) Skip(n int) *Query_[T] {
-	return &Query_[T]{
+func (q *KKQuery[T]) Skip(n int) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
 			skipped := false
@@ -68,8 +68,8 @@ func (q *Query_[T]) Skip(n int) *Query_[T] {
 }
 
 // TakeWhile returns items while the predicate is true.
-func (q *Query_[T]) TakeWhile(predicate func(T) bool) *Query_[T] {
-	return &Query_[T]{
+func (q *KKQuery[T]) TakeWhile(predicate func(T) bool) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
 			done := false
@@ -95,8 +95,8 @@ func (q *Query_[T]) TakeWhile(predicate func(T) bool) *Query_[T] {
 }
 
 // SkipWhile skips items while the predicate is true.
-func (q *Query_[T]) SkipWhile(predicate func(T) bool) *Query_[T] {
-	return &Query_[T]{
+func (q *KKQuery[T]) SkipWhile(predicate func(T) bool) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
 			skipping := true

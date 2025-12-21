@@ -14,7 +14,7 @@ type OrderedQuery[T any] struct {
 // SortedBy sorts items in ascending order by a key.
 func SortedBy[T any, K cmp.Ordered](q *KKQuery[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
-		Query: &KKQuery[T]{
+		KKQuery: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(q)
 				sort.Slice(
@@ -52,7 +52,7 @@ func SortedBy[T any, K cmp.Ordered](q *KKQuery[T], keyFn func(T) K) *OrderedQuer
 // SortedByDesc sorts items in descending order by a key.
 func SortedByDesc[T any, K cmp.Ordered](q *KKQuery[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
-		Query: &KKQuery[T]{
+		KKQuery: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(q)
 				sort.Slice(
@@ -103,7 +103,7 @@ func ThenBy[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K) *Ordered
 	)
 
 	return &OrderedQuery[T]{
-		Query: &KKQuery[T]{
+		KKQuery: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(oq.KKQuery)
 				sort.Slice(
@@ -149,7 +149,7 @@ func ThenByDescending[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K
 	)
 
 	return &OrderedQuery[T]{
-		Query: &KKQuery[T]{
+		KKQuery: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(oq.KKQuery)
 				sort.Slice(

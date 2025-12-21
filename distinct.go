@@ -1,7 +1,7 @@
 package kk
 
 // Distinct removes duplicate items (requires comparable type).
-func (q *Query_[T]) Distinct() *Query_[T] {
+func (q *KKQuery[T]) Distinct() *KKQuery[T] {
 	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
@@ -24,7 +24,7 @@ func (q *Query_[T]) Distinct() *Query_[T] {
 }
 
 // DistinctBy removes duplicate items based on a key function.
-func DistinctBy[T any, K comparable](q *Query_[T], keyFn func(T) K) *Query_[T] {
+func DistinctBy[T any, K comparable](q *KKQuery[T], keyFn func(T) K) *KKQuery[T] {
 	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter := q.iterate()
