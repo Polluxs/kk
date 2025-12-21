@@ -26,8 +26,8 @@ func Query[T any](slice []T) *KKQuery[T] {
 	}
 }
 
-// FromChan creates a KKQuery from a channel.
-func FromChan[T any](ch <-chan T) *KKQuery[T] {
+// QueryChan creates a KKQuery from a channel.
+func QueryChan[T any](ch <-chan T) *KKQuery[T] {
 	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			return func() (T, bool) {

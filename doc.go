@@ -29,7 +29,7 @@
 //
 // Package-level functions that transform, execute, or aggregate:
 //   - Query(slice) - Create query from slice
-//   - FromChan(ch) - Create query from channel
+//   - QueryChan(ch) - Create query from channel
 //   - Map(q, fn) - Transform each item to new type
 //   - FlatMap(q, fn) - Transform and flatten
 //   - Chunk(q, size) - Split into batches

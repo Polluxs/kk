@@ -37,7 +37,7 @@ func TestFromChan(t *testing.T) {
 	}
 	close(ch)
 
-	q := FromChan(ch)
+	q := QueryChan(ch)
 	result := Slice(q)
 
 	expected := []int{1, 2, 3, 4, 5}
@@ -56,7 +56,7 @@ func TestFromChanEmpty(t *testing.T) {
 	ch := make(chan int)
 	close(ch)
 
-	q := FromChan(ch)
+	q := QueryChan(ch)
 	result := Slice(q)
 
 	if len(result) != 0 {
