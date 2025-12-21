@@ -6,7 +6,7 @@ import (
 
 func TestCount(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	result := Count(From(input))
+	result := Count(Query(input))
 
 	if result != 5 {
 		t.Errorf("expected 5, got %d", result)
@@ -15,7 +15,7 @@ func TestCount(t *testing.T) {
 
 func TestCountEmpty(t *testing.T) {
 	input := []int{}
-	result := Count(From(input))
+	result := Count(Query(input))
 
 	if result != 0 {
 		t.Errorf("expected 0, got %d", result)
@@ -24,7 +24,7 @@ func TestCountEmpty(t *testing.T) {
 
 func TestCountWithFilter(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	result := Count(From(input).Where(func(n int) bool { return n%2 == 0 }))
+	result := Count(Query(input).Where(func(n int) bool { return n%2 == 0 }))
 
 	if result != 5 {
 		t.Errorf("expected 5, got %d", result)
@@ -33,7 +33,7 @@ func TestCountWithFilter(t *testing.T) {
 
 func TestSumInt(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	result := Sum(From(input), func(n int) int { return n })
+	result := Sum(Query(input), func(n int) int { return n })
 
 	if result != 15 {
 		t.Errorf("expected 15, got %d", result)
@@ -42,7 +42,7 @@ func TestSumInt(t *testing.T) {
 
 func TestSumFloat(t *testing.T) {
 	input := []float64{1.5, 2.5, 3.0}
-	result := Sum(From(input), func(n float64) float64 { return n })
+	result := Sum(Query(input), func(n float64) float64 { return n })
 
 	if result != 7.0 {
 		t.Errorf("expected 7.0, got %f", result)
@@ -51,7 +51,7 @@ func TestSumFloat(t *testing.T) {
 
 func TestSumEmpty(t *testing.T) {
 	input := []int{}
-	result := Sum(From(input), func(n int) int { return n })
+	result := Sum(Query(input), func(n int) int { return n })
 
 	if result != 0 {
 		t.Errorf("expected 0, got %d", result)
@@ -63,7 +63,7 @@ func TestSumWithSelector(t *testing.T) {
 		Value int
 	}
 	input := []Item{{Value: 10}, {Value: 20}, {Value: 30}}
-	result := Sum(From(input), func(item Item) int { return item.Value })
+	result := Sum(Query(input), func(item Item) int { return item.Value })
 
 	if result != 60 {
 		t.Errorf("expected 60, got %d", result)
@@ -72,7 +72,7 @@ func TestSumWithSelector(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	input := []int{5, 10, 15}
-	result, ok := First(From(input))
+	result, ok := First(Query(input))
 
 	if !ok {
 		t.Error("expected ok to be true")
@@ -84,7 +84,7 @@ func TestFirst(t *testing.T) {
 
 func TestFirstEmpty(t *testing.T) {
 	input := []int{}
-	result, ok := First(From(input))
+	result, ok := First(Query(input))
 
 	if ok {
 		t.Error("expected ok to be false")
@@ -96,7 +96,7 @@ func TestFirstEmpty(t *testing.T) {
 
 func TestFirstWithFilter(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	result, ok := First(From(input).Where(func(n int) bool { return n > 3 }))
+	result, ok := First(Query(input).Where(func(n int) bool { return n > 3 }))
 
 	if !ok {
 		t.Error("expected ok to be true")
@@ -108,7 +108,7 @@ func TestFirstWithFilter(t *testing.T) {
 
 func TestAny(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	result := Any(From(input), func(n int) bool { return n > 3 })
+	result := Any(Query(input), func(n int) bool { return n > 3 })
 
 	if !result {
 		t.Error("expected true")
@@ -117,7 +117,7 @@ func TestAny(t *testing.T) {
 
 func TestAnyNoneMatch(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	result := Any(From(input), func(n int) bool { return n > 10 })
+	result := Any(Query(input), func(n int) bool { return n > 10 })
 
 	if result {
 		t.Error("expected false")
@@ -126,7 +126,7 @@ func TestAnyNoneMatch(t *testing.T) {
 
 func TestAnyEmpty(t *testing.T) {
 	input := []int{}
-	result := Any(From(input), func(n int) bool { return true })
+	result := Any(Query(input), func(n int) bool { return true })
 
 	if result {
 		t.Error("expected false for empty query")
@@ -135,7 +135,7 @@ func TestAnyEmpty(t *testing.T) {
 
 func TestAll(t *testing.T) {
 	input := []int{2, 4, 6, 8, 10}
-	result := All(From(input), func(n int) bool { return n%2 == 0 })
+	result := All(Query(input), func(n int) bool { return n%2 == 0 })
 
 	if !result {
 		t.Error("expected true")
@@ -144,7 +144,7 @@ func TestAll(t *testing.T) {
 
 func TestAllOneFails(t *testing.T) {
 	input := []int{2, 4, 5, 8, 10}
-	result := All(From(input), func(n int) bool { return n%2 == 0 })
+	result := All(Query(input), func(n int) bool { return n%2 == 0 })
 
 	if result {
 		t.Error("expected false")
@@ -153,7 +153,7 @@ func TestAllOneFails(t *testing.T) {
 
 func TestAllEmpty(t *testing.T) {
 	input := []int{}
-	result := All(From(input), func(n int) bool { return false })
+	result := All(Query(input), func(n int) bool { return false })
 
 	if !result {
 		t.Error("expected true for empty query (vacuous truth)")
@@ -162,7 +162,7 @@ func TestAllEmpty(t *testing.T) {
 
 func TestAllNoneMatch(t *testing.T) {
 	input := []int{1, 3, 5, 7, 9}
-	result := All(From(input), func(n int) bool { return n%2 == 0 })
+	result := All(Query(input), func(n int) bool { return n%2 == 0 })
 
 	if result {
 		t.Error("expected false")

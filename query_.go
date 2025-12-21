@@ -1,16 +1,16 @@
 package kk
 
-// Query represents a lazy sequence of items that can be filtered, transformed, and executed.
-type Query[T any] struct {
+// KKQuery represents a lazy sequence of items that can be filtered, transformed, and executed.
+type KKQuery[T any] struct {
 	iterate func() Iterator[T]
 }
 
 // Iterator represents a function that returns the next item and whether there are more items.
 type Iterator[T any] func() (T, bool)
 
-// From creates a Query from a slice.
-func From[T any](slice []T) *Query[T] {
-	return &Query[T]{
+// Query creates a KKQuery from a slice.
+func Query[T any](slice []T) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			index := 0
 			return func() (T, bool) {
@@ -26,9 +26,9 @@ func From[T any](slice []T) *Query[T] {
 	}
 }
 
-// FromChan creates a Query from a channel.
-func FromChan[T any](ch <-chan T) *Query[T] {
-	return &Query[T]{
+// FromChan creates a KKQuery from a channel.
+func FromChan[T any](ch <-chan T) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			return func() (T, bool) {
 				item, ok := <-ch
@@ -39,7 +39,7 @@ func FromChan[T any](ch <-chan T) *Query[T] {
 }
 
 // Slice materializes the query to a slice.
-func Slice[T any](q *Query[T]) []T {
+func Slice[T any](q *KKQuery[T]) []T {
 	var result []T
 	iter := q.iterate()
 	for {

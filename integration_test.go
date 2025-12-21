@@ -38,12 +38,12 @@ func TestIntegration_FilterSortTake(t *testing.T) {
 	// Get active users from US, sorted by score descending, take top 2
 	users := getTestUsers()
 	q := SortedByDesc(
-		From(users).
+		Query(users).
 			Where(func(u User) bool { return u.Active }).
 			Where(func(u User) bool { return u.Country == "US" }),
 		func(u User) int { return u.Score },
 	)
-	result := Slice(q.Query.Take(2))
+	result := Slice(q.KKQuery.Take(2))
 
 	if len(result) != 2 {
 		t.Errorf("expected 2 users, got %d", len(result))
@@ -63,7 +63,7 @@ func TestIntegration_MapAndAggregate(t *testing.T) {
 	users := getTestUsers()
 	totalScore := Sum(
 		Mapped(
-			From(users).Where(func(u User) bool { return u.Active }),
+			Query(users).Where(func(u User) bool { return u.Active }),
 			func(u User) int { return u.Score },
 		),
 		func(n int) int { return n },
@@ -81,7 +81,7 @@ func TestIntegration_GroupByCountry(t *testing.T) {
 
 	// Get distinct countries of active users
 	activeByCountry := DistinctBy(
-		From(users).Where(func(u User) bool { return u.Active }),
+		Query(users).Where(func(u User) bool { return u.Active }),
 		func(u User) string { return u.Country },
 	)
 	countries := Slice(activeByCountry)
@@ -99,7 +99,7 @@ func TestIntegration_ChunkAndParallel(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(users).Where(func(u User) bool { return u.Active }),
+		Query(users).Where(func(u User) bool { return u.Active }),
 		3, // batch size
 		2, // concurrent batches
 		func(ctx context.Context, batch []User) error {
@@ -132,7 +132,7 @@ func TestIntegration_TransformCollectAndProcess(t *testing.T) {
 
 	results, err := ParallelResult(
 		context.Background(),
-		From(users).Where(func(u User) bool { return u.Active }).Take(3),
+		Query(users).Where(func(u User) bool { return u.Active }).Take(3),
 		2,
 		func(ctx context.Context, u User) (UserDTO, error) {
 			return UserDTO{
@@ -160,8 +160,8 @@ func TestIntegration_SetOperations(t *testing.T) {
 	// Test union of different filtered sets
 	users := getTestUsers()
 
-	usUsers := From(users).Where(func(u User) bool { return u.Country == "US" })
-	highScorers := From(users).Where(func(u User) bool { return u.Score >= 85 })
+	usUsers := Query(users).Where(func(u User) bool { return u.Country == "US" })
+	highScorers := Query(users).Where(func(u User) bool { return u.Score >= 85 })
 
 	// Union: users from US OR with score >= 85
 	union := Slice(usUsers.Union(highScorers))
@@ -191,7 +191,7 @@ func TestIntegration_ComplexChaining(t *testing.T) {
 
 	q := ThenBy(
 		SortedBy(
-			From(users).
+			Query(users).
 				Where(func(u User) bool { return u.Active }).
 				Skip(1).
 				Take(5),
@@ -200,7 +200,7 @@ func TestIntegration_ComplexChaining(t *testing.T) {
 		func(u User) string { return u.Name },
 	)
 
-	result := Slice(q.Query)
+	result := Slice(q.KKQuery)
 
 	if len(result) != 5 {
 		t.Errorf("expected 5 users, got %d", len(result))
@@ -226,18 +226,22 @@ func TestIntegration_FlatMapWithParallel(t *testing.T) {
 	}
 
 	// Create tasks for each user
-	tasks := Flattened(From(users), func(u User) []Task {
-		return []Task{
-			{UserID: u.ID, TaskID: 1},
-			{UserID: u.ID, TaskID: 2},
-		}
-	})
+	tasks := Flattened(
+		Query(users), func(u User) []Task {
+			return []Task{
+				{UserID: u.ID, TaskID: 1},
+				{UserID: u.ID, TaskID: 2},
+			}
+		},
+	)
 
 	var processed atomic.Int32
-	err := Parallel(context.Background(), tasks, 3, func(ctx context.Context, t Task) error {
-		processed.Add(1)
-		return nil
-	})
+	err := Parallel(
+		context.Background(), tasks, 3, func(ctx context.Context, t Task) error {
+			processed.Add(1)
+			return nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -256,7 +260,7 @@ func TestIntegration_PerKeyRateLimiting(t *testing.T) {
 
 	err := ParallelByKey(
 		context.Background(),
-		From(users),
+		Query(users),
 		10, // max total
 		1,  // max per country (simulate rate limit)
 		func(u User) string { return u.Country },
@@ -280,16 +284,18 @@ func TestIntegration_AnyAllFirst(t *testing.T) {
 	users := getTestUsers()
 
 	// Any active user over 40?
-	hasOldActive := Any(From(users), func(u User) bool {
-		return u.Active && u.Age > 40
-	})
+	hasOldActive := Any(
+		Query(users), func(u User) bool {
+			return u.Active && u.Age > 40
+		},
+	)
 	if !hasOldActive {
 		t.Error("expected to find active user over 40")
 	}
 
 	// All active users have score > 60?
 	allActiveHighScore := All(
-		From(users).Where(func(u User) bool { return u.Active }),
+		Query(users).Where(func(u User) bool { return u.Active }),
 		func(u User) bool { return u.Score > 60 },
 	)
 	if !allActiveHighScore {
@@ -297,7 +303,7 @@ func TestIntegration_AnyAllFirst(t *testing.T) {
 	}
 
 	// First user from Canada
-	canadian, found := First(From(users).Where(func(u User) bool { return u.Country == "CA" }))
+	canadian, found := First(Query(users).Where(func(u User) bool { return u.Country == "CA" }))
 	if !found {
 		t.Error("expected to find Canadian user")
 	}
@@ -317,7 +323,7 @@ func TestIntegration_ConcatAndDistinct(t *testing.T) {
 		{ID: 4, Country: "CA"},
 	}
 
-	combined := From(users1).Concat(From(users2))
+	combined := Query(users1).Concat(Query(users2))
 	countries := Mapped(combined, func(u User) string { return u.Country })
 	distinctCountries := Slice(countries.Distinct())
 
@@ -333,15 +339,17 @@ func TestIntegration_PipelineExample(t *testing.T) {
 	var emailsSent atomic.Int32
 
 	// Build a query with method chaining
-	q := From(users).
+	q := Query(users).
 		Where(func(u User) bool { return u.Active }).
 		Take(100)
 
 	// Execute in parallel
-	err := Parallel(context.Background(), q, 10, func(ctx context.Context, u User) error {
-		emailsSent.Add(1)
-		return nil
-	})
+	err := Parallel(
+		context.Background(), q, 10, func(ctx context.Context, u User) error {
+			emailsSent.Add(1)
+			return nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)

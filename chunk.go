@@ -2,8 +2,8 @@ package kk
 
 // Chunk splits items into batches of the specified size.
 // This is a function (not a method) because it returns a different type.
-func Chunk[T any](q *Query[T], size int) *Query[[]T] {
-	return &Query[[]T]{
+func Chunk[T any](q *KKQuery[T], size int) *KKQuery[[]T] {
+	return &KKQuery[[]T]{
 		iterate: func() Iterator[[]T] {
 			iter := q.iterate()
 			done := false

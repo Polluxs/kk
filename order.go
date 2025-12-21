@@ -5,21 +5,23 @@ import (
 	"sort"
 )
 
-// OrderedQuery wraps a Query with ordering capabilities for ThenBy chaining.
+// OrderedQuery wraps a KKQuery with ordering capabilities for ThenBy chaining.
 type OrderedQuery[T any] struct {
-	*Query[T]
+	*KKQuery[T]
 	comparators []func(T, T) int
 }
 
 // SortedBy sorts items in ascending order by a key.
-func SortedBy[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
+func SortedBy[T any, K cmp.Ordered](q *KKQuery[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
-		Query: &Query[T]{
+		Query: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(q)
-				sort.Slice(items, func(i, j int) bool {
-					return keyFn(items[i]) < keyFn(items[j])
-				})
+				sort.Slice(
+					items, func(i, j int) bool {
+						return keyFn(items[i]) < keyFn(items[j])
+					},
+				)
 				index := 0
 				return func() (T, bool) {
 					if index >= len(items) {
@@ -48,14 +50,16 @@ func SortedBy[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[
 }
 
 // SortedByDesc sorts items in descending order by a key.
-func SortedByDesc[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQuery[T] {
+func SortedByDesc[T any, K cmp.Ordered](q *KKQuery[T], keyFn func(T) K) *OrderedQuery[T] {
 	return &OrderedQuery[T]{
-		Query: &Query[T]{
+		Query: &KKQuery[T]{
 			iterate: func() Iterator[T] {
 				items := Slice(q)
-				sort.Slice(items, func(i, j int) bool {
-					return keyFn(items[i]) > keyFn(items[j])
-				})
+				sort.Slice(
+					items, func(i, j int) bool {
+						return keyFn(items[i]) > keyFn(items[j])
+					},
+				)
 				index := 0
 				return func() (T, bool) {
 					if index >= len(items) {
@@ -85,30 +89,34 @@ func SortedByDesc[T any, K cmp.Ordered](q *Query[T], keyFn func(T) K) *OrderedQu
 
 // ThenBy adds a secondary ascending sort.
 func ThenBy[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K) *OrderedQuery[T] {
-	newComparators := append(oq.comparators, func(a, b T) int {
-		ka, kb := keyFn(a), keyFn(b)
-		if ka < kb {
-			return -1
-		}
-		if ka > kb {
-			return 1
-		}
-		return 0
-	})
+	newComparators := append(
+		oq.comparators, func(a, b T) int {
+			ka, kb := keyFn(a), keyFn(b)
+			if ka < kb {
+				return -1
+			}
+			if ka > kb {
+				return 1
+			}
+			return 0
+		},
+	)
 
 	return &OrderedQuery[T]{
-		Query: &Query[T]{
+		Query: &KKQuery[T]{
 			iterate: func() Iterator[T] {
-				items := Slice(oq.Query)
-				sort.Slice(items, func(i, j int) bool {
-					for _, cmp := range newComparators {
-						result := cmp(items[i], items[j])
-						if result != 0 {
-							return result < 0
+				items := Slice(oq.KKQuery)
+				sort.Slice(
+					items, func(i, j int) bool {
+						for _, cmp := range newComparators {
+							result := cmp(items[i], items[j])
+							if result != 0 {
+								return result < 0
+							}
 						}
-					}
-					return false
-				})
+						return false
+					},
+				)
 				index := 0
 				return func() (T, bool) {
 					if index >= len(items) {
@@ -127,30 +135,34 @@ func ThenBy[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K) *Ordered
 
 // ThenByDescending adds a secondary descending sort.
 func ThenByDescending[T any, K cmp.Ordered](oq *OrderedQuery[T], keyFn func(T) K) *OrderedQuery[T] {
-	newComparators := append(oq.comparators, func(a, b T) int {
-		ka, kb := keyFn(a), keyFn(b)
-		if ka > kb {
-			return -1
-		}
-		if ka < kb {
-			return 1
-		}
-		return 0
-	})
+	newComparators := append(
+		oq.comparators, func(a, b T) int {
+			ka, kb := keyFn(a), keyFn(b)
+			if ka > kb {
+				return -1
+			}
+			if ka < kb {
+				return 1
+			}
+			return 0
+		},
+	)
 
 	return &OrderedQuery[T]{
-		Query: &Query[T]{
+		Query: &KKQuery[T]{
 			iterate: func() Iterator[T] {
-				items := Slice(oq.Query)
-				sort.Slice(items, func(i, j int) bool {
-					for _, cmp := range newComparators {
-						result := cmp(items[i], items[j])
-						if result != 0 {
-							return result < 0
+				items := Slice(oq.KKQuery)
+				sort.Slice(
+					items, func(i, j int) bool {
+						for _, cmp := range newComparators {
+							result := cmp(items[i], items[j])
+							if result != 0 {
+								return result < 0
+							}
 						}
-					}
-					return false
-				})
+						return false
+					},
+				)
 				index := 0
 				return func() (T, bool) {
 					if index >= len(items) {

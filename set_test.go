@@ -5,8 +5,8 @@ import (
 )
 
 func TestConcat(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{4, 5, 6})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{4, 5, 6})
 	result := Slice(q1.Concat(q2))
 
 	expected := []int{1, 2, 3, 4, 5, 6}
@@ -22,8 +22,8 @@ func TestConcat(t *testing.T) {
 }
 
 func TestConcatEmpty(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{})
 	result := Slice(q1.Concat(q2))
 
 	expected := []int{1, 2, 3}
@@ -33,8 +33,8 @@ func TestConcatEmpty(t *testing.T) {
 }
 
 func TestConcatBothEmpty(t *testing.T) {
-	q1 := From([]int{})
-	q2 := From([]int{})
+	q1 := Query([]int{})
+	q2 := Query([]int{})
 	result := Slice(q1.Concat(q2))
 
 	if len(result) != 0 {
@@ -43,8 +43,8 @@ func TestConcatBothEmpty(t *testing.T) {
 }
 
 func TestExcept(t *testing.T) {
-	q1 := From([]int{1, 2, 3, 4, 5})
-	q2 := From([]int{3, 4, 5, 6, 7})
+	q1 := Query([]int{1, 2, 3, 4, 5})
+	q2 := Query([]int{3, 4, 5, 6, 7})
 	result := Slice(q1.Except(q2))
 
 	expected := []int{1, 2}
@@ -60,8 +60,8 @@ func TestExcept(t *testing.T) {
 }
 
 func TestExceptWithDuplicates(t *testing.T) {
-	q1 := From([]int{1, 1, 2, 2, 3, 3})
-	q2 := From([]int{2})
+	q1 := Query([]int{1, 1, 2, 2, 3, 3})
+	q2 := Query([]int{2})
 	result := Slice(q1.Except(q2))
 
 	expected := []int{1, 3}
@@ -71,8 +71,8 @@ func TestExceptWithDuplicates(t *testing.T) {
 }
 
 func TestExceptEmpty(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{})
 	result := Slice(q1.Except(q2))
 
 	if len(result) != 3 {
@@ -81,8 +81,8 @@ func TestExceptEmpty(t *testing.T) {
 }
 
 func TestIntersect(t *testing.T) {
-	q1 := From([]int{1, 2, 3, 4, 5})
-	q2 := From([]int{3, 4, 5, 6, 7})
+	q1 := Query([]int{1, 2, 3, 4, 5})
+	q2 := Query([]int{3, 4, 5, 6, 7})
 	result := Slice(q1.Intersect(q2))
 
 	expected := []int{3, 4, 5}
@@ -98,8 +98,8 @@ func TestIntersect(t *testing.T) {
 }
 
 func TestIntersectWithDuplicates(t *testing.T) {
-	q1 := From([]int{1, 2, 2, 3, 3, 3})
-	q2 := From([]int{2, 3, 4})
+	q1 := Query([]int{1, 2, 2, 3, 3, 3})
+	q2 := Query([]int{2, 3, 4})
 	result := Slice(q1.Intersect(q2))
 
 	expected := []int{2, 3}
@@ -109,8 +109,8 @@ func TestIntersectWithDuplicates(t *testing.T) {
 }
 
 func TestIntersectEmpty(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{})
 	result := Slice(q1.Intersect(q2))
 
 	if len(result) != 0 {
@@ -119,8 +119,8 @@ func TestIntersectEmpty(t *testing.T) {
 }
 
 func TestIntersectNoOverlap(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{4, 5, 6})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{4, 5, 6})
 	result := Slice(q1.Intersect(q2))
 
 	if len(result) != 0 {
@@ -129,8 +129,8 @@ func TestIntersectNoOverlap(t *testing.T) {
 }
 
 func TestUnion(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{3, 4, 5})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{3, 4, 5})
 	result := Slice(q1.Union(q2))
 
 	expected := []int{1, 2, 3, 4, 5}
@@ -146,8 +146,8 @@ func TestUnion(t *testing.T) {
 }
 
 func TestUnionWithDuplicates(t *testing.T) {
-	q1 := From([]int{1, 1, 2, 2})
-	q2 := From([]int{2, 2, 3, 3})
+	q1 := Query([]int{1, 1, 2, 2})
+	q2 := Query([]int{2, 2, 3, 3})
 	result := Slice(q1.Union(q2))
 
 	expected := []int{1, 2, 3}
@@ -157,8 +157,8 @@ func TestUnionWithDuplicates(t *testing.T) {
 }
 
 func TestUnionEmpty(t *testing.T) {
-	q1 := From([]int{1, 2, 3})
-	q2 := From([]int{})
+	q1 := Query([]int{1, 2, 3})
+	q2 := Query([]int{})
 	result := Slice(q1.Union(q2))
 
 	expected := []int{1, 2, 3}
@@ -168,8 +168,8 @@ func TestUnionEmpty(t *testing.T) {
 }
 
 func TestUnionBothEmpty(t *testing.T) {
-	q1 := From([]int{})
-	q2 := From([]int{})
+	q1 := Query([]int{})
+	q2 := Query([]int{})
 	result := Slice(q1.Union(q2))
 
 	if len(result) != 0 {

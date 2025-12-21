@@ -2,8 +2,8 @@ package kk
 
 // Mapped transforms each item to a new type.
 // This is a function (not a method) because it returns a different type.
-func Mapped[T any, R any](q *Query[T], fn func(T) R) *Query[R] {
-	return &Query[R]{
+func Mapped[T any, R any](q *KKQuery[T], fn func(T) R) *KKQuery[R] {
+	return &KKQuery[R]{
 		iterate: func() Iterator[R] {
 			iter := q.iterate()
 			return func() (R, bool) {
@@ -20,8 +20,8 @@ func Mapped[T any, R any](q *Query[T], fn func(T) R) *Query[R] {
 
 // Flattened transforms each item to a slice and flattens the results.
 // This is a function (not a method) because it returns a different type.
-func Flattened[T any, R any](q *Query[T], fn func(T) []R) *Query[R] {
-	return &Query[R]{
+func Flattened[T any, R any](q *KKQuery[T], fn func(T) []R) *KKQuery[R] {
+	return &KKQuery[R]{
 		iterate: func() Iterator[R] {
 			iter := q.iterate()
 			var current []R

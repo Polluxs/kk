@@ -3,9 +3,9 @@
 // It offers chainable query methods for filtering and transforming data,
 // combined with powerful parallel execution functions.
 //
-// # Query Building
+// # KKQuery Building
 //
-// Build queries using method chaining on the Query type:
+// Build queries using method chaining on the KKQuery type:
 //
 //	q := kk.From(users).
 //	    Where(func(u User) bool { return u.Active }).
@@ -13,7 +13,7 @@
 //
 // # Methods (chainable)
 //
-// Methods that return a new Query of the same type:
+// Methods that return a new KKQuery of the same type:
 //   - Where(predicate) - Filter items
 //   - Take(n) - First n items
 //   - Skip(n) - Skip first n items
@@ -28,7 +28,7 @@
 // # Functions (terminal)
 //
 // Package-level functions that transform, execute, or aggregate:
-//   - From(slice) - Create query from slice
+//   - Query(slice) - Create query from slice
 //   - FromChan(ch) - Create query from channel
 //   - Map(q, fn) - Transform each item to new type
 //   - FlatMap(q, fn) - Transform and flatten

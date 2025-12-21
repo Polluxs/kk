@@ -6,7 +6,7 @@ import (
 
 func TestFrom(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	q := From(input)
+	q := Query(input)
 	result := Slice(q)
 
 	if len(result) != len(input) {
@@ -22,7 +22,7 @@ func TestFrom(t *testing.T) {
 
 func TestFromEmpty(t *testing.T) {
 	input := []int{}
-	q := From(input)
+	q := Query(input)
 	result := Slice(q)
 
 	if len(result) != 0 {

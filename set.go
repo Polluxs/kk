@@ -1,8 +1,8 @@
 package kk
 
 // Concat combines two queries into one.
-func (q *Query[T]) Concat(other *Query[T]) *Query[T] {
-	return &Query[T]{
+func (q *KKQuery[T]) Concat(other *KKQuery[T]) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter1 := q.iterate()
 			iter2 := other.iterate()
@@ -22,8 +22,8 @@ func (q *Query[T]) Concat(other *Query[T]) *Query[T] {
 }
 
 // Except returns items in the first query that are not in the second.
-func (q *Query[T]) Except(other *Query[T]) *Query[T] {
-	return &Query[T]{
+func (q *KKQuery[T]) Except(other *KKQuery[T]) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			// Materialize the second query to check membership
 			otherSet := make(map[any]bool)
@@ -52,8 +52,8 @@ func (q *Query[T]) Except(other *Query[T]) *Query[T] {
 }
 
 // Intersect returns items that are in both queries (distinct).
-func (q *Query[T]) Intersect(other *Query[T]) *Query[T] {
-	return &Query[T]{
+func (q *KKQuery[T]) Intersect(other *KKQuery[T]) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			// Materialize the second query to check membership
 			otherSet := make(map[any]bool)
@@ -82,8 +82,8 @@ func (q *Query[T]) Intersect(other *Query[T]) *Query[T] {
 }
 
 // Union returns items that are in either query (distinct).
-func (q *Query[T]) Union(other *Query[T]) *Query[T] {
-	return &Query[T]{
+func (q *KKQuery[T]) Union(other *KKQuery[T]) *KKQuery[T] {
+	return &KKQuery[T]{
 		iterate: func() Iterator[T] {
 			iter1 := q.iterate()
 			iter2 := other.iterate()

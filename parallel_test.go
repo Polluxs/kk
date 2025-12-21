@@ -12,10 +12,12 @@ func TestParallel(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	var count atomic.Int32
 
-	err := Parallel(context.Background(), From(input), 3, func(ctx context.Context, n int) error {
-		count.Add(1)
-		return nil
-	})
+	err := Parallel(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) error {
+			count.Add(1)
+			return nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -29,10 +31,12 @@ func TestParallelEmpty(t *testing.T) {
 	input := []int{}
 	var count atomic.Int32
 
-	err := Parallel(context.Background(), From(input), 3, func(ctx context.Context, n int) error {
-		count.Add(1)
-		return nil
-	})
+	err := Parallel(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) error {
+			count.Add(1)
+			return nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -46,12 +50,14 @@ func TestParallelWithError(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	expectedErr := errors.New("test error")
 
-	err := Parallel(context.Background(), From(input), 3, func(ctx context.Context, n int) error {
-		if n == 3 {
-			return expectedErr
-		}
-		return nil
-	})
+	err := Parallel(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) error {
+			if n == 3 {
+				return expectedErr
+			}
+			return nil
+		},
+	)
 
 	if err != expectedErr {
 		t.Errorf("expected %v, got %v", expectedErr, err)
@@ -63,20 +69,22 @@ func TestParallelConcurrency(t *testing.T) {
 	var concurrent atomic.Int32
 	var maxConcurrent atomic.Int32
 
-	err := Parallel(context.Background(), From(input), 3, func(ctx context.Context, n int) error {
-		current := concurrent.Add(1)
-		// Update max concurrent if current is higher
-		for {
-			max := maxConcurrent.Load()
-			if current <= max || maxConcurrent.CompareAndSwap(max, current) {
-				break
+	err := Parallel(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) error {
+			current := concurrent.Add(1)
+			// Update max concurrent if current is higher
+			for {
+				max := maxConcurrent.Load()
+				if current <= max || maxConcurrent.CompareAndSwap(max, current) {
+					break
+				}
 			}
-		}
 
-		time.Sleep(10 * time.Millisecond)
-		concurrent.Add(-1)
-		return nil
-	})
+			time.Sleep(10 * time.Millisecond)
+			concurrent.Add(-1)
+			return nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -97,11 +105,13 @@ func TestParallelContextCancellation(t *testing.T) {
 		cancel()
 	}()
 
-	err := Parallel(ctx, From(input), 2, func(ctx context.Context, n int) error {
-		time.Sleep(100 * time.Millisecond)
-		count.Add(1)
-		return nil
-	})
+	err := Parallel(
+		ctx, Query(input), 2, func(ctx context.Context, n int) error {
+			time.Sleep(100 * time.Millisecond)
+			count.Add(1)
+			return nil
+		},
+	)
 
 	// Should have been cancelled
 	if err != context.Canceled {
@@ -118,7 +128,7 @@ func TestParallelWithChaining(t *testing.T) {
 
 	err := Parallel(
 		context.Background(),
-		From(input).Where(func(n int) bool { return n%2 == 0 }),
+		Query(input).Where(func(n int) bool { return n%2 == 0 }),
 		2,
 		func(ctx context.Context, n int) error {
 			sum.Add(int32(n))
@@ -138,9 +148,11 @@ func TestParallelWithChaining(t *testing.T) {
 
 func TestParallelResult(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	results, err := ParallelResult(context.Background(), From(input), 3, func(ctx context.Context, n int) (int, error) {
-		return n * 2, nil
-	})
+	results, err := ParallelResult(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) (int, error) {
+			return n * 2, nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -160,9 +172,11 @@ func TestParallelResult(t *testing.T) {
 
 func TestParallelResultEmpty(t *testing.T) {
 	input := []int{}
-	results, err := ParallelResult(context.Background(), From(input), 3, func(ctx context.Context, n int) (int, error) {
-		return n * 2, nil
-	})
+	results, err := ParallelResult(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) (int, error) {
+			return n * 2, nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -177,12 +191,14 @@ func TestParallelResultWithError(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
 	expectedErr := errors.New("test error")
 
-	results, err := ParallelResult(context.Background(), From(input), 3, func(ctx context.Context, n int) (int, error) {
-		if n == 3 {
-			return 0, expectedErr
-		}
-		return n * 2, nil
-	})
+	results, err := ParallelResult(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) (int, error) {
+			if n == 3 {
+				return 0, expectedErr
+			}
+			return n * 2, nil
+		},
+	)
 
 	if err != expectedErr {
 		t.Errorf("expected %v, got %v", expectedErr, err)
@@ -195,9 +211,11 @@ func TestParallelResultWithError(t *testing.T) {
 
 func TestParallelResultTypeChange(t *testing.T) {
 	input := []int{1, 2, 3}
-	results, err := ParallelResult(context.Background(), From(input), 3, func(ctx context.Context, n int) (string, error) {
-		return string(rune('A' + n - 1)), nil
-	})
+	results, err := ParallelResult(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) (string, error) {
+			return string(rune('A' + n - 1)), nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -213,11 +231,13 @@ func TestParallelResultTypeChange(t *testing.T) {
 
 func TestParallelResultMaintainsOrder(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	results, err := ParallelResult(context.Background(), From(input), 3, func(ctx context.Context, n int) (int, error) {
-		// Add some delay to mix up completion order
-		time.Sleep(time.Duration(10-n) * time.Millisecond)
-		return n, nil
-	})
+	results, err := ParallelResult(
+		context.Background(), Query(input), 3, func(ctx context.Context, n int) (int, error) {
+			// Add some delay to mix up completion order
+			time.Sleep(time.Duration(10-n) * time.Millisecond)
+			return n, nil
+		},
+	)
 
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -249,7 +269,7 @@ func TestParallelByKey(t *testing.T) {
 
 	err := ParallelByKey(
 		context.Background(),
-		From(orders),
+		Query(orders),
 		10, // max total
 		2,  // max per key
 		func(o Order) string { return o.CustomerID },
@@ -283,7 +303,7 @@ func TestParallelByKeyPerKeyLimit(t *testing.T) {
 
 	err := ParallelByKey(
 		context.Background(),
-		From(orders),
+		Query(orders),
 		10, // max total (high to not limit)
 		2,  // max per key (should limit to 2)
 		func(o Order) string { return o.CustomerID },
@@ -322,7 +342,7 @@ func TestParallelByKeyWithError(t *testing.T) {
 
 	err := ParallelByKey(
 		context.Background(),
-		From(orders),
+		Query(orders),
 		10,
 		2,
 		func(o Order) string { return o.CustomerID },
@@ -344,7 +364,7 @@ func TestParallelByKeyEmpty(t *testing.T) {
 
 	err := ParallelByKey(
 		context.Background(),
-		From(orders),
+		Query(orders),
 		10,
 		2,
 		func(o Order) string { return o.CustomerID },
@@ -365,7 +385,7 @@ func TestParallelByBatch(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(input),
+		Query(input),
 		3, // batch size
 		2, // max concurrent batches
 		func(ctx context.Context, batch []int) error {
@@ -399,7 +419,7 @@ func TestParallelByBatchConcurrency(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(input),
+		Query(input),
 		3, // batch size (4 batches)
 		2, // max concurrent batches
 		func(ctx context.Context, batch []int) error {
@@ -432,7 +452,7 @@ func TestParallelByBatchWithError(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(input),
+		Query(input),
 		3,
 		2,
 		func(ctx context.Context, batch []int) error {
@@ -453,7 +473,7 @@ func TestParallelByBatchEmpty(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(input),
+		Query(input),
 		3,
 		2,
 		func(ctx context.Context, batch []int) error {
@@ -472,7 +492,7 @@ func TestParallelByBatchSingleBatch(t *testing.T) {
 
 	err := ParallelByBatch(
 		context.Background(),
-		From(input),
+		Query(input),
 		10, // batch size larger than input
 		2,
 		func(ctx context.Context, batch []int) error {

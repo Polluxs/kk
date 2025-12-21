@@ -7,7 +7,9 @@ import (
 
 // Parallel processes items in parallel with a maximum of n concurrent operations.
 // Returns the first error encountered, or nil if all operations succeed.
-func Parallel[T any](ctx context.Context, q *Query[T], n int, fn func(context.Context, T) error) error {
+func Parallel[T any](
+	ctx context.Context, q *KKQuery[T], n int, fn func(context.Context, T) error,
+) error {
 	items := Slice(q)
 	if len(items) == 0 {
 		return nil
@@ -53,10 +55,12 @@ loop:
 			}
 
 			if err := fn(ctx, item); err != nil {
-				errOnce.Do(func() {
-					firstErr = err
-					cancel()
-				})
+				errOnce.Do(
+					func() {
+						firstErr = err
+						cancel()
+					},
+				)
 			}
 		}(item)
 	}
@@ -74,7 +78,9 @@ loop:
 // ParallelResult processes items in parallel and collects results.
 // Returns results and the first error encountered.
 // This is a function (not a method) because it returns a different type.
-func ParallelResult[T any, R any](ctx context.Context, q *Query[T], n int, fn func(context.Context, T) (R, error)) ([]R, error) {
+func ParallelResult[T any, R any](
+	ctx context.Context, q *KKQuery[T], n int, fn func(context.Context, T) (R, error),
+) ([]R, error) {
 	items := Slice(q)
 	if len(items) == 0 {
 		return nil, nil
@@ -125,10 +131,12 @@ loop:
 
 			result, err := fn(ctx, item)
 			if err != nil {
-				errOnce.Do(func() {
-					firstErr = err
-					cancel()
-				})
+				errOnce.Do(
+					func() {
+						firstErr = err
+						cancel()
+					},
+				)
 				return
 			}
 
@@ -156,7 +164,10 @@ loop:
 // n is the maximum total concurrent operations.
 // perKey is the maximum concurrent operations per key.
 // keyFn extracts the key from each item.
-func ParallelByKey[T any, K comparable](ctx context.Context, q *Query[T], n int, perKey int, keyFn func(T) K, fn func(context.Context, T) error) error {
+func ParallelByKey[T any, K comparable](
+	ctx context.Context, q *KKQuery[T], n int, perKey int, keyFn func(T) K,
+	fn func(context.Context, T) error,
+) error {
 	items := Slice(q)
 	if len(items) == 0 {
 		return nil
@@ -231,10 +242,12 @@ loop:
 			}
 
 			if err := fn(ctx, item); err != nil {
-				errOnce.Do(func() {
-					firstErr = err
-					cancel()
-				})
+				errOnce.Do(
+					func() {
+						firstErr = err
+						cancel()
+					},
+				)
 			}
 		}(item, keySem)
 	}
@@ -252,7 +265,9 @@ loop:
 // ParallelByBatch processes items in batches with parallel batch execution.
 // batchSize is the number of items per batch.
 // n is the maximum number of concurrent batches.
-func ParallelByBatch[T any](ctx context.Context, q *Query[T], batchSize int, n int, fn func(context.Context, []T) error) error {
+func ParallelByBatch[T any](
+	ctx context.Context, q *KKQuery[T], batchSize int, n int, fn func(context.Context, []T) error,
+) error {
 	// Create batches using Chunk
 	batches := Slice(Chunk(q, batchSize))
 	if len(batches) == 0 {
@@ -299,10 +314,12 @@ loop:
 			}
 
 			if err := fn(ctx, batch); err != nil {
-				errOnce.Do(func() {
-					firstErr = err
-					cancel()
-				})
+				errOnce.Do(
+					func() {
+						firstErr = err
+						cancel()
+					},
+				)
 			}
 		}(batch)
 	}

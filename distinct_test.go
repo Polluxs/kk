@@ -6,7 +6,7 @@ import (
 
 func TestDistinct(t *testing.T) {
 	input := []int{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}
-	q := From(input).Distinct()
+	q := Query(input).Distinct()
 	result := Slice(q)
 
 	expected := []int{1, 2, 3, 4}
@@ -23,7 +23,7 @@ func TestDistinct(t *testing.T) {
 
 func TestDistinctEmpty(t *testing.T) {
 	input := []int{}
-	q := From(input).Distinct()
+	q := Query(input).Distinct()
 	result := Slice(q)
 
 	if len(result) != 0 {
@@ -33,7 +33,7 @@ func TestDistinctEmpty(t *testing.T) {
 
 func TestDistinctAllUnique(t *testing.T) {
 	input := []int{1, 2, 3, 4, 5}
-	q := From(input).Distinct()
+	q := Query(input).Distinct()
 	result := Slice(q)
 
 	if len(result) != len(input) {
@@ -43,7 +43,7 @@ func TestDistinctAllUnique(t *testing.T) {
 
 func TestDistinctStrings(t *testing.T) {
 	input := []string{"a", "b", "a", "c", "b", "c"}
-	q := From(input).Distinct()
+	q := Query(input).Distinct()
 	result := Slice(q)
 
 	expected := []string{"a", "b", "c"}
@@ -70,7 +70,7 @@ func TestDistinctBy(t *testing.T) {
 		{Name: "Charlie", Age: 30},
 		{Name: "David", Age: 25},
 	}
-	q := DistinctBy(From(input), func(p Person) int { return p.Age })
+	q := DistinctBy(Query(input), func(p Person) int { return p.Age })
 	result := Slice(q)
 
 	if len(result) != 2 {
@@ -84,7 +84,7 @@ func TestDistinctBy(t *testing.T) {
 
 func TestDistinctByEmpty(t *testing.T) {
 	input := []Person{}
-	q := DistinctBy(From(input), func(p Person) int { return p.Age })
+	q := DistinctBy(Query(input), func(p Person) int { return p.Age })
 	result := Slice(q)
 
 	if len(result) != 0 {
@@ -98,7 +98,7 @@ func TestDistinctByAllUnique(t *testing.T) {
 		{Name: "Bob", Age: 25},
 		{Name: "Charlie", Age: 35},
 	}
-	q := DistinctBy(From(input), func(p Person) int { return p.Age })
+	q := DistinctBy(Query(input), func(p Person) int { return p.Age })
 	result := Slice(q)
 
 	if len(result) != len(input) {
