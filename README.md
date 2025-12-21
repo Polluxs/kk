@@ -60,6 +60,7 @@ Package-level functions that transform, execute, or aggregate.
 | `kk.FromChan(ch)` | Create query from channel |
 | `kk.Map(q, fn)` | Transform each item to new type |
 | `kk.FlatMap(q, fn)` | Transform and flatten |
+| `kk.GroupBy(q, keyFn)` | Group items by key |
 | `kk.Parallel(q, ctx, n, fn)` | Process items in parallel |
 | `kk.ParallelResult(q, ctx, n, fn)` | Process and collect results |
 | `kk.ParallelByKey(q, ctx, n, perKey, keyFn, fn)` | Parallel with per-key limit |
@@ -96,6 +97,19 @@ responses, err := kk.ParallelResult(
     kk.Map(q, toRequest),
     ctx, 10, fetch,
 )
+```
+
+### Group and aggregate
+
+```go
+// Group users by country, count per group
+groups := kk.GroupBy(kk.From(users), func(u User) string {
+    return u.Country
+})
+
+for _, g := range kk.ToSlice(groups) {
+    fmt.Printf("%s: %d users\n", g.Key, len(g.Items))
+}
 ```
 
 ### Per-key rate limiting
@@ -156,7 +170,8 @@ This affects every operation that transforms to a different type:
 - `Map` → stuck as function
 - `FlatMap` → stuck as function
 - `ParallelResult` → stuck as function
-- Any future `Select`, `GroupBy`, `Zip` → all stuck as functions
+- `GroupBy` → stuck as function
+- Any future `Select`, `Zip` → all stuck as functions
 
 **9 out of 10 times, you're mapping to your own custom types**. And if ```[ANY]``` was OK for me, I'd write Typescript. 
 
