@@ -333,3 +333,86 @@ loop:
 
 	return firstErr
 }
+
+// ParallelByBatchChan collects batches from a channel on-the-fly and processes
+// them in parallel. Unlike ParallelByBatch, it never materializes the entire
+// stream into memory — it reads from the channel, fills a batch, and dispatches
+// it to a worker as soon as the batch is full (or the channel closes).
+// batchSize is the number of items per batch.
+// n is the maximum number of concurrent batches.
+func ParallelByBatchChan[T any](
+	ctx context.Context, ch <-chan T, batchSize int, n int, fn func(context.Context, []T) error,
+) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	sem := make(chan struct{}, n)
+
+	var wg sync.WaitGroup
+	var firstErr error
+	var errOnce sync.Once
+
+	batch := make([]T, 0, batchSize)
+
+	dispatch := func(b []T) bool {
+		// Acquire semaphore
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			return false
+		}
+
+		wg.Add(1)
+		go func(b []T) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+
+			if err := fn(ctx, b); err != nil {
+				errOnce.Do(func() {
+					firstErr = err
+					cancel()
+				})
+			}
+		}(b)
+		return true
+	}
+
+loop:
+	for {
+		select {
+		case <-ctx.Done():
+			break loop
+		case item, ok := <-ch:
+			if !ok {
+				// Channel closed — dispatch remaining items
+				if len(batch) > 0 {
+					dispatch(batch)
+					batch = nil
+				}
+				break loop
+			}
+
+			batch = append(batch, item)
+			if len(batch) >= batchSize {
+				if !dispatch(batch) {
+					break loop
+				}
+				batch = make([]T, 0, batchSize)
+			}
+		}
+	}
+
+	wg.Wait()
+
+	if firstErr == nil && ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	return firstErr
+}
