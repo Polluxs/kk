@@ -65,6 +65,7 @@ Package-level functions that transform, execute, or aggregate.
 | `kk.ParallelResult(q, ctx, n, fn)` | Process and collect results |
 | `kk.ParallelByKey(q, ctx, n, perKey, keyFn, fn)` | Parallel with per-key limit |
 | `kk.ParallelByBatch(q, ctx, size, n, fn)` | Process in batches |
+| `kk.ParallelByBatchChan(ctx, ch, size, n, fn)` | Stream batches from channel |
 | `kk.Count(q)` | Count items |
 | `kk.Sum(q, fn)` | Sum values |
 | `kk.First(q)` | First item |
@@ -128,6 +129,17 @@ err := kk.ParallelByKey(q, ctx, 50, 2,
 ```go
 q := kk.From(records).Where(isValid).Take(10000)
 err := kk.ParallelByBatch(q, ctx, 100, 4, func(ctx context.Context, batch []Record) error {
+    return db.BulkInsert(ctx, batch)
+})
+```
+
+### Streaming batch processing from a channel
+
+```go
+ch := make(chan Record)
+go produceRecords(ch) // closes ch when done
+
+err := kk.ParallelByBatchChan(ctx, ch, 100, 4, func(ctx context.Context, batch []Record) error {
     return db.BulkInsert(ctx, batch)
 })
 ```
