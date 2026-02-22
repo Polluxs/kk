@@ -58,6 +58,7 @@ Package-level functions that transform, execute, or aggregate.
 |:---------|:------------|
 | `kk.From(slice)` | Create query from slice |
 | `kk.FromChan(ch)` | Create query from channel |
+| `kk.QueryMapKeys(m)` | Create query from map keys |
 | `kk.Mapped(q, fn)` | Transform each item to new type |
 | `kk.Flattened(q, fn)` | Transform and flatten |
 | `kk.GroupedBy(q, keyFn)` | Group items by key |

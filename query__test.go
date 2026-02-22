@@ -63,3 +63,33 @@ func TestFromChanEmpty(t *testing.T) {
 		t.Errorf("expected empty slice, got %v", result)
 	}
 }
+
+func TestQueryMapKeys(t *testing.T) {
+	m := map[string]int{"a": 1, "b": 2, "c": 3}
+	q := QueryMapKeys(m)
+	result := Slice(q)
+
+	if len(result) != 3 {
+		t.Errorf("expected length 3, got %d", len(result))
+	}
+
+	seen := map[string]bool{}
+	for _, k := range result {
+		seen[k] = true
+	}
+	for k := range m {
+		if !seen[k] {
+			t.Errorf("missing key %q", k)
+		}
+	}
+}
+
+func TestQueryMapKeysEmpty(t *testing.T) {
+	m := map[string]int{}
+	q := QueryMapKeys(m)
+	result := Slice(q)
+
+	if len(result) != 0 {
+		t.Errorf("expected empty slice, got %v", result)
+	}
+}

@@ -38,6 +38,28 @@ func QueryChan[T any](ch <-chan T) *KKQuery[T] {
 	}
 }
 
+// QueryMapKeys creates a KKQuery from the keys of a map.
+func QueryMapKeys[K comparable, V any](m map[K]V) *KKQuery[K] {
+	return &KKQuery[K]{
+		iterate: func() Iterator[K] {
+			keys := make([]K, 0, len(m))
+			for k := range m {
+				keys = append(keys, k)
+			}
+			index := 0
+			return func() (K, bool) {
+				if index >= len(keys) {
+					var zero K
+					return zero, false
+				}
+				item := keys[index]
+				index++
+				return item, true
+			}
+		},
+	}
+}
+
 // Slice materializes the query to a slice.
 func Slice[T any](q *KKQuery[T]) []T {
 	var result []T
